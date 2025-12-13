@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Resume View Counter
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: nodejs24.x
+
+Resources:
+  ViewCounterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  ViewCounterApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins: ["*"]
+        AllowHeaders: [Content-Type]
+        AllowMethods: [GET, OPTIONS]
+
+  ViewCounterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: index.handler
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ViewCounterTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ViewCounterTable
+      Events:
+        GetViewCount:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ViewCounterApi
+            Path: /ViewCounter
+            Method: get
+            
+
+# ... your existing Resources section ...
+
+Outputs:
+  ViewCounterApi:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ViewCounterApi}.execute-api.${AWS::Region}.amazonaws.com/ViewCounter"
+    Export:
+      Name: ViewCounterApiUrl
+

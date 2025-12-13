@@ -1,0 +1,32 @@
+C:\Users\dlg_g\AppData\Local\Programs\Python\Python314\Lib\site-packages\samtranslator\compat.py:2: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
+  from pydantic import v1 as pydantic
+2025-11-22 20:48:29,258 | Config file location: C:\view-counter-SAM\samconfig.toml
+2025-11-22 20:48:29,258 | Loading configuration values from [default.['deploy'].parameters] (env.command_name.section) in config file at 'C:\view-counter-SAM\samconfig.toml'...
+2025-11-22 20:48:29,259 | Configuration values successfully loaded.
+2025-11-22 20:48:29,259 | Configuration values are: {'region': 'us-east-1', 'stack_name': 'resume-counter-sam', 'resolve_s3': True, 's3_prefix': 'resume-counter-sam', 'confirm_changeset': True, 'capabilities': 'CAPABILITY_IAM', 'image_repositories': []}
+2025-11-22 20:48:29,273 | Using SAM Template at C:\view-counter-SAM\.aws-sam\build\template.yaml
+2025-11-22 20:48:29,287 | Using config file: samconfig.toml, config environment: default
+2025-11-22 20:48:29,288 | Expand command line arguments to:
+2025-11-22 20:48:29,288 | --guided --template_file=C:\view-counter-SAM\.aws-sam\build\template.yaml --fail_on_empty_changeset --confirm_changeset --on_failure=ROLLBACK --max_wait_duration=60 --stack_name=resume-counter-sam --s3_prefix=resume-counter-sam --resolve_s3 --capabilities=['CAPABILITY_IAM'] 
+2025-11-22 20:48:29,319 | There is no customer defined id or cdk path defined for resource ViewCounterTable, so we will use the resource logical id as the resource id
+2025-11-22 20:48:29,319 | There is no customer defined id or cdk path defined for resource ViewCounterApi, so we will use the resource logical id as the resource id
+2025-11-22 20:48:29,319 | Sam customer defined id is more priority than other IDs. Customer defined id for resource ViewCounterFunction is ViewCounterFunction
+
+Configuring SAM deploy
+======================
+
+	Looking for config file [samconfig.toml] :  Found
+	Reading default arguments  :  Success
+
+	Setting default arguments for 'sam deploy'
+	=========================================
+	Stack Name [resume-counter-sam]: 2025-11-22 20:51:10,110 | Telemetry endpoint configured to be https://aws-serverless-tools-telemetry.us-west-2.amazonaws.com/metrics
+2025-11-22 20:51:10,194 | No container socket path in global storage, falling back to DOCKER_HOST detection: 
+2025-11-22 20:51:10,195 | Telemetry endpoint configured to be https://aws-serverless-tools-telemetry.us-west-2.amazonaws.com/metrics
+2025-11-22 20:51:10,195 | Unable to find Click Context for getting session_id.
+2025-11-22 20:51:10,195 | Sending Telemetry: {'metrics': [{'commandRun': {'requestId': '83180259-ec18-42a3-bcb3-b5772a086e63', 'installationId': '178b4b29-f54b-4f64-a272-83b95ed0f214', 'sessionId': '26ed8e6d-90a0-435d-a1a5-8745285b5f47', 'executionEnvironment': 'CLI', 'ci': False, 'pyversion': '3.14.0', 'samcliVersion': '1.147.1', 'osPlatform': 'Windows', 'awsProfileProvided': False, 'debugFlagProvided': True, 'region': 'us-east-1', 'commandName': 'sam deploy', 'metricSpecificAttributes': {'projectType': 'CFN', 'gitOrigin': None, 'projectName': 'f60f2eec233399a417feee25872cd447fa8872ffb2816c2af979d3275f66bd83', 'initialCommit': None, 'containerEngine': 'docker-default', 'adminContainerPreference': None}, 'duration': 160827, 'exitReason': 'Abort', 'exitCode': 1}}]}
+2025-11-22 20:51:10,195 | No container socket path in global storage, falling back to DOCKER_HOST detection: 
+2025-11-22 20:51:10,195 | Sending Telemetry: {'metrics': [{'events': {'requestId': 'c3b56eea-ef82-4670-bdd5-672551f7ac98', 'installationId': '178b4b29-f54b-4f64-a272-83b95ed0f214', 'sessionId': '26ed8e6d-90a0-435d-a1a5-8745285b5f47', 'executionEnvironment': 'CLI', 'ci': False, 'pyversion': '3.14.0', 'samcliVersion': '1.147.1', 'osPlatform': 'Windows', 'commandName': 'sam deploy', 'metricSpecificAttributes': {'events': [{'event_name': 'SamConfigFileExtension', 'event_value': '.toml', 'thread_id': 'ce894ea4452c4eb39de185f18178365b', 'time_stamp': '2025-11-23 01:48:29.258731+00', 'exception_name': None}, {'event_name': 'SamConfigFileExtension', 'event_value': '.toml', 'thread_id': '5ca37b99db91448b87ddca730cda90da', 'time_stamp': '2025-11-23 01:48:29.286191+00', 'exception_name': None}, {'event_name': 'SamConfigFileExtension', 'event_value': '.toml', 'thread_id': '9c882313a9004c6e805aaacd5163edff', 'time_stamp': '2025-11-23 01:48:29.320283+00', 'exception_name': None}], 'containerEngine': 'docker-default'}}}]}
+2025-11-22 20:51:10,879 | HTTPSConnectionPool(host='aws-serverless-tools-telemetry.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=0.1)
+2025-11-22 20:51:10,916 | HTTPSConnectionPool(host='aws-serverless-tools-telemetry.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=0.1)
+Aborted!

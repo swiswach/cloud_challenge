@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "resume-stack"
+s3_bucket = ""  # SAM will create this automatically
+s3_prefix = "resume-stack"
+region = "us-east-1"  # Change to your preferred region
+confirm_changeset = false
+capabilities = "CAPABILITY_IAM"
+image_repositories = []

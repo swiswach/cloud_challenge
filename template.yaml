@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Resume hosting with S3 and CloudFront
+
+Resources:
+  ResumeBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-resume-bucket"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::OriginAccessIdentity
+    Properties:
+      OriginAccessIdentityConfig:
+        Comment: !Sub "OAI for ${AWS::StackName}"
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ResumeBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}"
+            Action: "s3:GetObject"
+            Resource: !Sub "${ResumeBucket}/*"
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !GetAtt ResumeBucket.RegionalDomainName
+            Id: S3Origin
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
+        Enabled: true
+        DefaultRootObject: index.html
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6  # Managed-CachingOptimized
+        PriceClass: PriceClass_100
+
+  # Your API Gateway and Lambda functions here
+  ResumeApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+
+  # Add your Lambda functions here - example:
+  # ResumeFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: src/
+  #     Handler: app.lambdaHandler
+  #     Runtime: nodejs18.x
+  #     Events:
+  #       ResumeApi:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref ResumeApi
+  #           Path: /resume
+  #           Method: get
+
+Outputs:
+  S3BucketName:
+    Description: "S3 Bucket for resume files"
+    Value: !Ref ResumeBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-S3Bucket"
+
+  CloudFrontUrl:
+    Description: "CloudFront Distribution URL"
+    Value: !Sub "https://${CloudFrontDistribution.DomainName}"
+    Export:
+      Name: !Sub "${AWS::StackName}-CloudFrontUrl"
+
+  CloudFrontDistributionId:
+    Description: "CloudFront Distribution ID"
+    Value: !Ref CloudFrontDistribution
+    Export:
+      Name: !Sub "${AWS::StackName}-DistributionId"
+
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ResumeApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+    Export:
+      Name: !Sub "${AWS::StackName}-ApiEndpoint"
