@@ -1,0 +1,85 @@
+name: Deploy Resume to AWS
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+
+      - name: Set up AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Build SAM Application
+        run: sam build --use-container
+
+      - name: Deploy SAM Application
+        run: |
+          sam deploy \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --stack-name resume-stack \
+            --capabilities CAPABILITY_IAM \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Get CloudFormation Outputs
+        id: get-outputs
+        run: |
+          API_ENDPOINT=$(aws cloudformation describe-stacks \
+            --stack-name resume-stack \
+            --query 'Stacks[0].Outputs[?OutputKey==`ApiEndpoint`].OutputValue' \
+            --output text \
+            --region ${{ secrets.AWS_REGION }})
+          echo "api_endpoint=$API_ENDPOINT" >> $GITHUB_OUTPUT
+          
+          CLOUDFRONT_URL=$(aws cloudformation describe-stacks \
+            --stack-name resume-stack \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontUrl`].OutputValue' \
+            --output text \
+            --region ${{ secrets.AWS_REGION }})
+          echo "cloudfront_url=$CLOUDFRONT_URL" >> $GITHUB_OUTPUT
+
+      - name: Update Resume with API Endpoint
+        run: |
+          # Replace the API endpoint in your JavaScript file
+          sed -i "s|const API_ENDPOINT = '.*'|const API_ENDPOINT = '${{ steps.get-outputs.outputs.api_endpoint }}'|g" resume.js
+          # Or if it's in HTML:
+          # sed -i "s|https://.*\.execute-api\..*\.amazonaws\.com/[^'\"]*|${{ steps.get-outputs.outputs.api_endpoint }}|g" resume.html
+
+      - name: Sync Updated Files to S3
+        run: |
+          S3_BUCKET=$(aws cloudformation describe-stacks \
+            --stack-name resume-stack \
+            --query 'Stacks[0].Outputs[?OutputKey==`S3BucketName`].OutputValue' \
+            --output text \
+            --region ${{ secrets.AWS_REGION }})
+          aws s3 sync . s3://$S3_BUCKET --exclude ".git/*" --exclude ".github/*" --exclude "template.yaml" --exclude "samconfig.toml"
+
+      - name: Invalidate CloudFront Cache
+        run: |
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
+            --stack-name resume-stack \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDistributionId`].OutputValue' \
+            --output text \
+            --region ${{ secrets.AWS_REGION }})
+          aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
