@@ -20,9 +20,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
           
+      - name: Get S3 bucket name
+        id: get-bucket
+        run: |
+          BUCKET_NAME=$(aws s3api list-buckets --query "Buckets[?contains(Name, 'resume') || contains(Name, 'cloud-challenge')].Name" --output text | head -1)
+          echo "bucket-name=$BUCKET_NAME" >> $GITHUB_OUTPUT
+          
       - name: Sync Resume to S3
-        run: aws s3 sync . s3://${{ secrets.S3_BUCKET_NAME }} --delete --exclude ".git/*" --exclude ".github/*"
+        run: aws s3 sync . s3://${{ steps.get-bucket.outputs.bucket-name }} --delete --exclude ".git/*" --exclude ".github/*"
         
+      - name: Get CloudFront Distribution ID
+        id: get-distribution
+        run: |
+          DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[0].Id" --output text)
+          echo "distribution-id=$DISTRIBUTION_ID" >> $GITHUB_OUTPUT
+          
       - name: Invalidate CloudFront Cache
-        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
- 
+        run: aws cloudfront create-invalidation --distribution-id ${{ steps.get-distribution.outputs.distribution-id }} --paths "/*"
